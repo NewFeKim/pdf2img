@@ -303,6 +303,8 @@
   .result-info .filename { font-size: 0.85rem; font-weight: 600; color: var(--text); }
   .result-info .meta     { font-size: 0.75rem; color: var(--text-muted); }
 
+  .card-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
   .result-card a.btn-dl {
     display: inline-flex; align-items: center; gap: 6px;
     font-family: inherit; font-size: 0.82rem; font-weight: 600;
@@ -311,6 +313,20 @@
     text-decoration: none; transition: background 0.15s; white-space: nowrap;
   }
   .result-card a.btn-dl:hover { background: var(--accent-hover); }
+
+  .btn-copy {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: inherit; font-size: 0.82rem; font-weight: 600;
+    background: var(--white); color: var(--accent);
+    border: 1.5px solid var(--accent);
+    padding: 7px 14px; border-radius: 8px;
+    cursor: pointer; transition: background 0.15s, color 0.15s; white-space: nowrap;
+  }
+  .btn-copy:hover { background: var(--accent-light); }
+  .btn-copy.copied {
+    background: var(--success-light); color: var(--success);
+    border-color: var(--success);
+  }
 
   /* Download all */
   #btn-dl-all {
@@ -582,8 +598,12 @@
             <span class="filename">${filename}</span>
             <span class="meta">${pages}페이지 병합 · ${width}×${height}px · ${(blob.size/1024).toFixed(0)} KB</span>
           </div>
-          <a class="btn-dl" href="${url}" download="${filename}">⬇ 다운로드</a>
+          <div class="card-actions">
+            <button class="btn-copy">📋 클립보드 복사</button>
+            <a class="btn-dl" href="${url}" download="${filename}">⬇ 다운로드</a>
+          </div>
         </div>`;
+      card.querySelector('.btn-copy').addEventListener('click', () => copyToClipboard(blob, card.querySelector('.btn-copy')));
       results.appendChild(card);
     }
 
@@ -602,6 +622,26 @@
       await new Promise(r => setTimeout(r, 400));
     }
   });
+
+  async function copyToClipboard(blob, btn) {
+    try {
+      let pngBlob = blob;
+      if (blob.type !== 'image/png') {
+        const img = await createImageBitmap(blob);
+        const c = document.createElement('canvas');
+        c.width = img.width; c.height = img.height;
+        c.getContext('2d').drawImage(img, 0, 0);
+        pngBlob = await new Promise(res => c.toBlob(res, 'image/png'));
+      }
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': pngBlob })]);
+      btn.textContent = '✓ 복사됨';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.innerHTML = '📋 클립보드 복사'; btn.classList.remove('copied'); }, 2000);
+    } catch {
+      btn.textContent = '복사 실패';
+      setTimeout(() => { btn.innerHTML = '📋 클립보드 복사'; }, 2000);
+    }
+  }
 
   function setProgress(pct, msg) {
     progressBar.style.width = Math.min(pct, 100) + '%';
