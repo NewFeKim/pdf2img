@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PDF → 이미지 변환</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f8f9fa;
+    --white: #ffffff;
+    --border: #e2e6ea;
+    --border-hover: #adb5bd;
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --accent-light: #eff6ff;
+    --text: #1e293b;
+    --text-sub: #64748b;
+    --text-muted: #94a3b8;
+    --success: #059669;
+    --radius: 12px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-weight: 400;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 48px 16px 80px;
+  }
+
+  /* Header */
+  header {
+    text-align: center;
+    margin-bottom: 32px;
+    width: 100%;
+    max-width: 600px;
+  }
+
+  .header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--accent-light);
+    color: var(--accent);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 100px;
+    margin-bottom: 14px;
+  }
+
+  header h1 {
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+    letter-spacing: -0.02em;
+  }
+
+  header p {
+    font-size: 0.875rem;
+    color: var(--text-sub);
+    line-height: 1.6;
+  }
+
+  /* Card wrapper */
+  .card {
+    width: 100%;
+    max-width: 600px;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+
+  /* Drop zone */
+  #drop-zone {
+    width: 100%;
+    max-width: 600px;
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 52px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    position: relative;
+    background: var(--white);
+    box-shadow: var(--shadow);
+  }
+
+  #drop-zone:hover {
+    border-color: var(--accent);
+    background: var(--accent-light);
+  }
+
+  #drop-zone.drag-over {
+    border-color: var(--accent);
+    background: var(--accent-light);
+    transform: scale(1.01);
+  }
+
+  #drop-zone input[type="file"] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+  }
+
+  .drop-icon {
+    width: 52px;
+    height: 52px;
+    margin: 0 auto 16px;
+    background: var(--accent-light);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+  }
+
+  #drop-zone .label {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  #drop-zone .sub {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  /* File selected state */
+  #file-name-display {
+    width: 100%;
+    max-width: 600px;
+    display: none;
+    align-items: center;
+    gap: 10px;
+    background: var(--accent-light);
+    border: 1px solid #bfdbfe;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-top: 10px;
+    font-size: 0.85rem;
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  #file-name-display.visible { display: flex; }
+
+  /* Options */
+  #options {
+    width: 100%;
+    max-width: 600px;
+    margin-top: 12px;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+  }
+
+  .options-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  .options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 14px;
+  }
+
+  .opt-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .opt-group label {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--text-sub);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .range-val {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  .opt-group select {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.875rem;
+    padding: 8px 10px;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.15s;
+    width: 100%;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 28px;
+  }
+
+  .opt-group select:focus { border-color: var(--accent); }
+
+  .opt-group input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--border);
+    outline: none;
+    cursor: pointer;
+    accent-color: var(--accent);
+    margin-top: 4px;
+  }
+
+  .opt-group input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    box-shadow: 0 1px 4px rgba(37,99,235,0.3);
+  }
+
+  /* Convert button */
+  #btn-convert {
+    display: none;
+    width: 100%;
+    max-width: 600px;
+    margin-top: 12px;
+    padding: 14px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+    box-shadow: 0 2px 8px rgba(37,99,235,0.25);
+  }
+
+  #btn-convert:hover {
+    background: var(--accent-hover);
+    box-shadow: 0 4px 12px rgba(37,99,235,0.35);
+  }
+
+  #btn-convert:active { transform: scale(0.99); }
+  #btn-convert:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
+
+  /* Progress */
+  #progress-wrap {
+    display: none;
+    width: 100%;
+    max-width: 600px;
+    margin-top: 16px;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    box-shadow: var(--shadow);
+  }
+
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  #progress-text {
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--text-sub);
+  }
+
+  #progress-pct {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  #progress-bar-bg {
+    height: 6px;
+    background: var(--bg);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  #progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent), #60a5fa);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+  }
+
+  /* Results */
+  #results {
+    width: 100%;
+    max-width: 600px;
+    margin-top: 16px;
+  }
+
+  .result-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    animation: fadeUp 0.3s ease;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .result-preview {
+    width: 100%;
+    max-height: 320px;
+    object-fit: contain;
+    display: block;
+    background: #f1f5f9;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .result-card .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .result-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .result-info .filename {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .result-info .meta {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+
+  .result-card a.btn-dl {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 600;
+    background: var(--accent);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+
+  .result-card a.btn-dl:hover { background: var(--accent-hover); }
+
+  /* Footer */
+  footer {
+    margin-top: 40px;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-align: center;
+    line-height: 1.7;
+  }
+
+  /* Responsive */
+  @media (max-width: 480px) {
+    body { padding: 28px 12px 60px; }
+    #drop-zone { padding: 36px 16px; }
+    .options-grid { grid-template-columns: 1fr 1fr; }
+    .result-card .card-footer { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">🔒 100% 브라우저 처리</div>
+  <h1>PDF → 이미지 변환</h1>
+  <p>설치 없이 바로 사용 · PDF 파일이 외부 서버로 전송되지 않습니다</p>
+</header>
+
+<div id="drop-zone">
+  <input type="file" id="file-input" accept=".pdf">
+  <div class="drop-icon">📄</div>
+  <div class="label">PDF 파일을 여기에 드래그하거나 클릭하여 선택</div>
+  <div class="sub" style="margin-top:6px">여러 페이지는 자동으로 하나의 이미지로 합쳐집니다</div>
+</div>
+
+<div id="file-name-display">
+  <span>📎</span>
+  <span id="file-name-text"></span>
+</div>
+
+<div id="options">
+  <div class="options-title">변환 옵션</div>
+  <div class="options-grid">
+    <div class="opt-group">
+      <label>출력 형식</label>
+      <select id="fmt">
+        <option value="image/jpeg">JPG</option>
+        <option value="image/png">PNG</option>
+        <option value="image/webp">WebP</option>
+      </select>
+    </div>
+    <div class="opt-group">
+      <label>해상도 배율 <span class="range-val" id="scale-val">2×</span></label>
+      <input type="range" id="scale" min="1" max="4" step="0.5" value="2">
+    </div>
+    <div class="opt-group" id="quality-group">
+      <label>품질 <span class="range-val" id="quality-val">92%</span></label>
+      <input type="range" id="quality" min="50" max="100" step="1" value="92">
+    </div>
+  </div>
+</div>
+
+<button id="btn-convert">이미지로 변환하기</button>
+
+<div id="progress-wrap">
+  <div class="progress-header">
+    <span id="progress-text">준비 중…</span>
+    <span id="progress-pct">0%</span>
+  </div>
+  <div id="progress-bar-bg"><div id="progress-bar"></div></div>
+</div>
+
+<div id="results"></div>
+
+<footer>
+  모든 변환 작업은 브라우저 안에서만 처리됩니다.<br>
+  파일이 서버에 업로드되거나 저장되지 않습니다.
+</footer>
+
+<script type="module">
+  const PDFJS_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.min.mjs';
+  const { getDocument, GlobalWorkerOptions } = await import(PDFJS_CDN);
+  GlobalWorkerOptions.workerSrc =
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.mjs';
+
+  const dropZone    = document.getElementById('drop-zone');
+  const fileInput   = document.getElementById('file-input');
+  const fileDisplay = document.getElementById('file-name-display');
+  const fileNameTxt = document.getElementById('file-name-text');
+  const btnConvert  = document.getElementById('btn-convert');
+  const results     = document.getElementById('results');
+  const progressW   = document.getElementById('progress-wrap');
+  const progressBar = document.getElementById('progress-bar');
+  const progressTxt = document.getElementById('progress-text');
+  const progressPct = document.getElementById('progress-pct');
+  const scaleEl     = document.getElementById('scale');
+  const scaleVal    = document.getElementById('scale-val');
+  const qualityEl   = document.getElementById('quality');
+  const qualityVal  = document.getElementById('quality-val');
+  const fmtEl       = document.getElementById('fmt');
+  const qGroup      = document.getElementById('quality-group');
+
+  let selectedFile = null;
+
+  scaleEl.addEventListener('input', () => scaleVal.textContent = scaleEl.value + '×');
+  qualityEl.addEventListener('input', () => qualityVal.textContent = qualityEl.value + '%');
+  fmtEl.addEventListener('change', () => {
+    qGroup.style.display = fmtEl.value === 'image/png' ? 'none' : '';
+  });
+
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    const f = e.dataTransfer.files[0];
+    if (f && f.type === 'application/pdf') setFile(f);
+  });
+  fileInput.addEventListener('change', () => { if (fileInput.files[0]) setFile(fileInput.files[0]); });
+
+  function setFile(f) {
+    selectedFile = f;
+    fileNameTxt.textContent = `${f.name}  (${(f.size/1024).toFixed(0)} KB)`;
+    fileDisplay.classList.add('visible');
+    btnConvert.style.display = 'block';
+    results.innerHTML = '';
+    progressW.style.display = 'none';
+  }
+
+  btnConvert.addEventListener('click', async () => {
+    if (!selectedFile) return;
+    btnConvert.disabled = true;
+    results.innerHTML = '';
+    progressW.style.display = 'block';
+    setProgress(0, 'PDF 불러오는 중…');
+
+    const fmt      = fmtEl.value;
+    const scale    = parseFloat(scaleEl.value);
+    const quality  = parseInt(qualityEl.value) / 100;
+    const ext      = fmt === 'image/jpeg' ? 'jpg' : fmt === 'image/png' ? 'png' : 'webp';
+    const baseName = selectedFile.name.replace(/\.pdf$/i, '');
+
+    const arrayBuffer = await selectedFile.arrayBuffer();
+    const pdf   = await getDocument({ data: arrayBuffer }).promise;
+    const total = pdf.numPages;
+
+    const pageCanvases = [];
+    for (let i = 1; i <= total; i++) {
+      setProgress((i - 1) / total * 80, `페이지 ${i} / ${total} 렌더링 중…`);
+      const page     = await pdf.getPage(i);
+      const viewport = page.getViewport({ scale });
+      const canvas   = document.createElement('canvas');
+      canvas.width   = viewport.width;
+      canvas.height  = viewport.height;
+      await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+      pageCanvases.push(canvas);
+    }
+
+    setProgress(85, '페이지 병합 중…');
+
+    const totalWidth  = Math.max(...pageCanvases.map(c => c.width));
+    const totalHeight = pageCanvases.reduce((sum, c) => sum + c.height, 0);
+    const merged = document.createElement('canvas');
+    merged.width  = totalWidth;
+    merged.height = totalHeight;
+    const ctx = merged.getContext('2d');
+
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, totalWidth, totalHeight);
+
+    let yOffset = 0;
+    for (const c of pageCanvases) {
+      ctx.drawImage(c, Math.floor((totalWidth - c.width) / 2), yOffset);
+      yOffset += c.height;
+    }
+
+    setProgress(95, '이미지 생성 중…');
+
+    const filename = `${baseName}.${ext}`;
+    const blob = await new Promise(res => merged.toBlob(res, fmt, quality));
+    const url  = URL.createObjectURL(blob);
+
+    const card = document.createElement('div');
+    card.className = 'result-card';
+    card.innerHTML = `
+      <img class="result-preview" src="${url}" alt="변환 결과">
+      <div class="card-footer">
+        <div class="result-info">
+          <span class="filename">${filename}</span>
+          <span class="meta">${total}페이지 병합 · ${merged.width}×${merged.height}px · ${(blob.size/1024).toFixed(0)} KB</span>
+        </div>
+        <a class="btn-dl" href="${url}" download="${filename}">⬇ 다운로드</a>
+      </div>`;
+    results.appendChild(card);
+
+    setProgress(100, '변환 완료');
+    btnConvert.disabled = false;
+  });
+
+  function setProgress(pct, msg) {
+    progressBar.style.width = pct + '%';
+    progressTxt.textContent = msg;
+    progressPct.textContent = Math.round(pct) + '%';
+  }
+</script>
+</body>
+</html>
