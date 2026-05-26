@@ -13,17 +13,18 @@
     --bg: #f8f9fa;
     --white: #ffffff;
     --border: #e2e6ea;
-    --border-hover: #adb5bd;
     --accent: #2563eb;
     --accent-hover: #1d4ed8;
     --accent-light: #eff6ff;
     --text: #1e293b;
     --text-sub: #64748b;
     --text-muted: #94a3b8;
+    --danger: #ef4444;
+    --danger-light: #fef2f2;
     --success: #059669;
+    --success-light: #ecfdf5;
     --radius: 12px;
     --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
-    --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
   }
 
   body {
@@ -43,7 +44,7 @@
     text-align: center;
     margin-bottom: 32px;
     width: 100%;
-    max-width: 600px;
+    max-width: 640px;
   }
 
   .header-badge {
@@ -75,93 +76,95 @@
     line-height: 1.6;
   }
 
-  /* Card wrapper */
-  .card {
-    width: 100%;
-    max-width: 600px;
-    background: var(--white);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-  }
-
   /* Drop zone */
   #drop-zone {
     width: 100%;
-    max-width: 600px;
+    max-width: 640px;
     border: 2px dashed var(--border);
     border-radius: var(--radius);
-    padding: 52px 24px;
+    padding: 48px 24px;
     text-align: center;
     cursor: pointer;
-    transition: border-color 0.2s, background 0.2s;
+    transition: border-color 0.2s, background 0.2s, transform 0.15s;
     position: relative;
     background: var(--white);
     box-shadow: var(--shadow);
   }
 
-  #drop-zone:hover {
-    border-color: var(--accent);
-    background: var(--accent-light);
-  }
-
-  #drop-zone.drag-over {
-    border-color: var(--accent);
-    background: var(--accent-light);
-    transform: scale(1.01);
-  }
+  #drop-zone:hover { border-color: var(--accent); background: var(--accent-light); }
+  #drop-zone.drag-over { border-color: var(--accent); background: var(--accent-light); transform: scale(1.01); }
 
   #drop-zone input[type="file"] {
     position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
   }
 
   .drop-icon {
-    width: 52px;
-    height: 52px;
+    width: 52px; height: 52px;
     margin: 0 auto 16px;
     background: var(--accent-light);
     border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     font-size: 1.5rem;
   }
 
-  #drop-zone .label {
-    font-size: 0.95rem;
-    font-weight: 500;
-    color: var(--text);
-    margin-bottom: 4px;
-  }
+  #drop-zone .label { font-size: 0.95rem; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+  #drop-zone .sub   { font-size: 0.8rem; color: var(--text-muted); margin-top: 6px; }
 
-  #drop-zone .sub {
-    font-size: 0.8rem;
-    color: var(--text-muted);
-  }
-
-  /* File selected state */
-  #file-name-display {
+  /* File list */
+  #file-list {
     width: 100%;
-    max-width: 600px;
-    display: none;
+    max-width: 640px;
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .file-chip {
+    display: flex;
     align-items: center;
-    gap: 10px;
+    justify-content: space-between;
     background: var(--accent-light);
     border: 1px solid #bfdbfe;
     border-radius: 8px;
-    padding: 10px 14px;
-    margin-top: 10px;
-    font-size: 0.85rem;
+    padding: 9px 14px;
+    font-size: 0.84rem;
     color: var(--accent);
     font-weight: 500;
+    animation: fadeUp 0.2s ease;
   }
 
-  #file-name-display.visible { display: flex; }
+  .file-chip .chip-left { display: flex; align-items: center; gap: 8px; overflow: hidden; }
+  .file-chip .chip-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 340px; }
+  .file-chip .chip-size { font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; margin-left: 4px; }
+
+  .file-chip .chip-remove {
+    background: none; border: none; cursor: pointer;
+    color: var(--text-muted); font-size: 1rem; padding: 2px 4px;
+    border-radius: 4px; transition: color 0.15s, background 0.15s;
+    flex-shrink: 0;
+  }
+  .file-chip .chip-remove:hover { color: var(--danger); background: var(--danger-light); }
+
+  /* Limit warning */
+  #limit-warn {
+    display: none;
+    width: 100%;
+    max-width: 640px;
+    margin-top: 8px;
+    background: var(--danger-light);
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    padding: 9px 14px;
+    font-size: 0.82rem;
+    color: var(--danger);
+    font-weight: 500;
+  }
 
   /* Options */
   #options {
     width: 100%;
-    max-width: 600px;
+    max-width: 640px;
     margin-top: 12px;
     background: var(--white);
     border: 1px solid var(--border);
@@ -171,11 +174,9 @@
   }
 
   .options-title {
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-size: 0.75rem; font-weight: 600;
     color: var(--text-muted);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    letter-spacing: 0.08em; text-transform: uppercase;
     margin-bottom: 14px;
   }
 
@@ -185,102 +186,62 @@
     gap: 14px;
   }
 
-  .opt-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
+  .opt-group { display: flex; flex-direction: column; gap: 6px; }
 
   .opt-group label {
-    font-size: 0.78rem;
-    font-weight: 500;
-    color: var(--text-sub);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    font-size: 0.78rem; font-weight: 500; color: var(--text-sub);
+    display: flex; justify-content: space-between; align-items: center;
   }
 
-  .range-val {
-    font-size: 0.78rem;
-    font-weight: 600;
-    color: var(--accent);
-  }
+  .range-val { font-size: 0.78rem; font-weight: 600; color: var(--accent); }
 
   .opt-group select {
     background: var(--bg);
     border: 1px solid var(--border);
     border-radius: 8px;
     color: var(--text);
-    font-family: inherit;
-    font-size: 0.875rem;
-    padding: 8px 10px;
-    outline: none;
-    cursor: pointer;
+    font-family: inherit; font-size: 0.875rem;
+    padding: 8px 28px 8px 10px;
+    outline: none; cursor: pointer;
     transition: border-color 0.15s;
-    width: 100%;
-    appearance: none;
+    width: 100%; appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 10px center;
-    padding-right: 28px;
   }
-
   .opt-group select:focus { border-color: var(--accent); }
 
   .opt-group input[type="range"] {
-    -webkit-appearance: none;
-    width: 100%;
-    height: 4px;
-    border-radius: 2px;
-    background: var(--border);
-    outline: none;
-    cursor: pointer;
-    accent-color: var(--accent);
-    margin-top: 4px;
+    -webkit-appearance: none; width: 100%; height: 4px;
+    border-radius: 2px; background: var(--border);
+    outline: none; cursor: pointer; accent-color: var(--accent); margin-top: 4px;
   }
-
   .opt-group input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: var(--accent);
-    cursor: pointer;
+    -webkit-appearance: none; width: 16px; height: 16px;
+    border-radius: 50%; background: var(--accent); cursor: pointer;
     box-shadow: 0 1px 4px rgba(37,99,235,0.3);
   }
 
   /* Convert button */
   #btn-convert {
     display: none;
-    width: 100%;
-    max-width: 600px;
-    margin-top: 12px;
-    padding: 14px;
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    border-radius: var(--radius);
-    font-family: inherit;
-    font-size: 0.95rem;
-    font-weight: 600;
+    width: 100%; max-width: 640px;
+    margin-top: 12px; padding: 14px;
+    background: var(--accent); color: #fff;
+    border: none; border-radius: var(--radius);
+    font-family: inherit; font-size: 0.95rem; font-weight: 600;
     cursor: pointer;
     transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
     box-shadow: 0 2px 8px rgba(37,99,235,0.25);
   }
-
-  #btn-convert:hover {
-    background: var(--accent-hover);
-    box-shadow: 0 4px 12px rgba(37,99,235,0.35);
-  }
-
+  #btn-convert:hover { background: var(--accent-hover); box-shadow: 0 4px 12px rgba(37,99,235,0.35); }
   #btn-convert:active { transform: scale(0.99); }
   #btn-convert:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
 
   /* Progress */
   #progress-wrap {
     display: none;
-    width: 100%;
-    max-width: 600px;
+    width: 100%; max-width: 640px;
     margin-top: 16px;
     background: var(--white);
     border: 1px solid var(--border);
@@ -290,44 +251,24 @@
   }
 
   .progress-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    display: flex; justify-content: space-between; align-items: center;
     margin-bottom: 10px;
   }
+  #progress-text { font-size: 0.82rem; font-weight: 500; color: var(--text-sub); }
+  #progress-pct  { font-size: 0.82rem; font-weight: 600; color: var(--accent); }
 
-  #progress-text {
-    font-size: 0.82rem;
-    font-weight: 500;
-    color: var(--text-sub);
-  }
-
-  #progress-pct {
-    font-size: 0.82rem;
-    font-weight: 600;
-    color: var(--accent);
-  }
-
-  #progress-bar-bg {
-    height: 6px;
-    background: var(--bg);
-    border-radius: 3px;
-    overflow: hidden;
-  }
-
+  #progress-bar-bg { height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; }
   #progress-bar {
-    height: 100%;
-    width: 0%;
+    height: 100%; width: 0%;
     background: linear-gradient(90deg, var(--accent), #60a5fa);
-    border-radius: 3px;
-    transition: width 0.3s ease;
+    border-radius: 3px; transition: width 0.3s ease;
   }
 
   /* Results */
   #results {
-    width: 100%;
-    max-width: 600px;
+    width: 100%; max-width: 640px;
     margin-top: 16px;
+    display: flex; flex-direction: column; gap: 14px;
   }
 
   .result-card {
@@ -345,65 +286,52 @@
   }
 
   .result-preview {
-    width: 100%;
-    max-height: 320px;
-    object-fit: contain;
-    display: block;
+    width: 100%; max-height: 300px;
+    object-fit: contain; display: block;
     background: #f1f5f9;
     border-bottom: 1px solid var(--border);
   }
 
   .result-card .card-footer {
-    display: flex;
-    align-items: center;
+    display: flex; align-items: center;
     justify-content: space-between;
     padding: 12px 16px;
-    flex-wrap: wrap;
-    gap: 8px;
+    flex-wrap: wrap; gap: 8px;
   }
 
-  .result-info {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  .result-info .filename {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--text);
-  }
-
-  .result-info .meta {
-    font-size: 0.75rem;
-    color: var(--text-muted);
-  }
+  .result-info { display: flex; flex-direction: column; gap: 2px; }
+  .result-info .filename { font-size: 0.85rem; font-weight: 600; color: var(--text); }
+  .result-info .meta     { font-size: 0.75rem; color: var(--text-muted); }
 
   .result-card a.btn-dl {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-family: inherit;
-    font-size: 0.82rem;
-    font-weight: 600;
-    background: var(--accent);
-    color: #fff;
-    padding: 8px 16px;
-    border-radius: 8px;
-    text-decoration: none;
-    transition: background 0.15s;
-    white-space: nowrap;
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: inherit; font-size: 0.82rem; font-weight: 600;
+    background: var(--accent); color: #fff;
+    padding: 8px 16px; border-radius: 8px;
+    text-decoration: none; transition: background 0.15s; white-space: nowrap;
   }
-
   .result-card a.btn-dl:hover { background: var(--accent-hover); }
+
+  /* Download all */
+  #btn-dl-all {
+    display: none;
+    width: 100%; max-width: 640px;
+    padding: 12px;
+    background: var(--white);
+    color: var(--accent);
+    border: 1.5px solid var(--accent);
+    border-radius: var(--radius);
+    font-family: inherit; font-size: 0.9rem; font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  #btn-dl-all:hover { background: var(--accent); color: #fff; }
 
   /* Footer */
   footer {
     margin-top: 40px;
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    text-align: center;
-    line-height: 1.7;
+    font-size: 0.75rem; color: var(--text-muted);
+    text-align: center; line-height: 1.7;
   }
 
   /* Responsive */
@@ -412,6 +340,7 @@
     #drop-zone { padding: 36px 16px; }
     .options-grid { grid-template-columns: 1fr 1fr; }
     .result-card .card-footer { flex-direction: column; align-items: flex-start; }
+    .file-chip .chip-name { max-width: 180px; }
   }
 </style>
 </head>
@@ -420,20 +349,18 @@
 <header>
   <div class="header-badge">🔒 100% 브라우저 처리</div>
   <h1>PDF → 이미지 변환</h1>
-  <p>설치 없이 바로 사용 · PDF 파일이 외부 서버로 전송되지 않습니다</p>
+  <p>설치 없이 바로 사용 · 최대 10개 PDF · 파일이 외부 서버로 전송되지 않습니다</p>
 </header>
 
 <div id="drop-zone">
-  <input type="file" id="file-input" accept=".pdf">
+  <input type="file" id="file-input" accept=".pdf" multiple>
   <div class="drop-icon">📄</div>
-  <div class="label">PDF 파일을 여기에 드래그하거나 클릭하여 선택</div>
-  <div class="sub" style="margin-top:6px">여러 페이지는 자동으로 하나의 이미지로 합쳐집니다</div>
+  <div class="label">PDF 파일을 드래그하거나 클릭하여 선택</div>
+  <div class="sub">최대 10개 · 각 PDF가 이미지 1장으로 변환됩니다</div>
 </div>
 
-<div id="file-name-display">
-  <span>📎</span>
-  <span id="file-name-text"></span>
-</div>
+<div id="file-list"></div>
+<div id="limit-warn">⚠ PDF는 최대 10개까지만 추가할 수 있습니다.</div>
 
 <div id="options">
   <div class="options-title">변환 옵션</div>
@@ -468,6 +395,7 @@
 </div>
 
 <div id="results"></div>
+<button id="btn-dl-all">⬇ 전체 다운로드</button>
 
 <footer>
   모든 변환 작업은 브라우저 안에서만 처리됩니다.<br>
@@ -480,11 +408,14 @@
   GlobalWorkerOptions.workerSrc =
     'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.mjs';
 
+  const MAX_FILES = 10;
+
   const dropZone    = document.getElementById('drop-zone');
   const fileInput   = document.getElementById('file-input');
-  const fileDisplay = document.getElementById('file-name-display');
-  const fileNameTxt = document.getElementById('file-name-text');
+  const fileListEl  = document.getElementById('file-list');
+  const limitWarn   = document.getElementById('limit-warn');
   const btnConvert  = document.getElementById('btn-convert');
+  const btnDlAll    = document.getElementById('btn-dl-all');
   const results     = document.getElementById('results');
   const progressW   = document.getElementById('progress-wrap');
   const progressBar = document.getElementById('progress-bar');
@@ -497,7 +428,7 @@
   const fmtEl       = document.getElementById('fmt');
   const qGroup      = document.getElementById('quality-group');
 
-  let selectedFile = null;
+  let selectedFiles = [];  // File 객체 배열
 
   scaleEl.addEventListener('input', () => scaleVal.textContent = scaleEl.value + '×');
   qualityEl.addEventListener('input', () => qualityVal.textContent = qualityEl.value + '%');
@@ -505,45 +436,75 @@
     qGroup.style.display = fmtEl.value === 'image/png' ? 'none' : '';
   });
 
+  // 파일 추가
+  function addFiles(newFiles) {
+    const pdfs = Array.from(newFiles).filter(f => f.type === 'application/pdf');
+    const combined = [...selectedFiles];
+    let warned = false;
+
+    for (const f of pdfs) {
+      // 중복 제거
+      if (combined.find(x => x.name === f.name && x.size === f.size)) continue;
+      if (combined.length >= MAX_FILES) { warned = true; break; }
+      combined.push(f);
+    }
+
+    selectedFiles = combined;
+    limitWarn.style.display = warned ? 'block' : 'none';
+    renderFileList();
+    updateConvertBtn();
+  }
+
+  function removeFile(idx) {
+    selectedFiles.splice(idx, 1);
+    limitWarn.style.display = 'none';
+    renderFileList();
+    updateConvertBtn();
+  }
+
+  function renderFileList() {
+    fileListEl.innerHTML = '';
+    selectedFiles.forEach((f, i) => {
+      const chip = document.createElement('div');
+      chip.className = 'file-chip';
+      chip.innerHTML = `
+        <div class="chip-left">
+          <span>📎</span>
+          <span class="chip-name">${f.name}</span>
+          <span class="chip-size">${(f.size/1024).toFixed(0)} KB</span>
+        </div>
+        <button class="chip-remove" title="제거">✕</button>`;
+      chip.querySelector('.chip-remove').addEventListener('click', () => removeFile(i));
+      fileListEl.appendChild(chip);
+    });
+  }
+
+  function updateConvertBtn() {
+    btnConvert.style.display = selectedFiles.length > 0 ? 'block' : 'none';
+  }
+
+  // 이벤트
   dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
   dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
   dropZone.addEventListener('drop', e => {
     e.preventDefault();
     dropZone.classList.remove('drag-over');
-    const f = e.dataTransfer.files[0];
-    if (f && f.type === 'application/pdf') setFile(f);
+    addFiles(e.dataTransfer.files);
   });
-  fileInput.addEventListener('change', () => { if (fileInput.files[0]) setFile(fileInput.files[0]); });
+  fileInput.addEventListener('change', () => {
+    addFiles(fileInput.files);
+    fileInput.value = '';  // 같은 파일 재선택 허용
+  });
 
-  function setFile(f) {
-    selectedFile = f;
-    fileNameTxt.textContent = `${f.name}  (${(f.size/1024).toFixed(0)} KB)`;
-    fileDisplay.classList.add('visible');
-    btnConvert.style.display = 'block';
-    results.innerHTML = '';
-    progressW.style.display = 'none';
-  }
-
-  btnConvert.addEventListener('click', async () => {
-    if (!selectedFile) return;
-    btnConvert.disabled = true;
-    results.innerHTML = '';
-    progressW.style.display = 'block';
-    setProgress(0, 'PDF 불러오는 중…');
-
-    const fmt      = fmtEl.value;
-    const scale    = parseFloat(scaleEl.value);
-    const quality  = parseInt(qualityEl.value) / 100;
-    const ext      = fmt === 'image/jpeg' ? 'jpg' : fmt === 'image/png' ? 'png' : 'webp';
-    const baseName = selectedFile.name.replace(/\.pdf$/i, '');
-
-    const arrayBuffer = await selectedFile.arrayBuffer();
+  // PDF 1개 → 병합 이미지 blob 변환
+  async function convertPdf(file, scale, fmt, quality, onProgress) {
+    const arrayBuffer = await file.arrayBuffer();
     const pdf   = await getDocument({ data: arrayBuffer }).promise;
     const total = pdf.numPages;
 
     const pageCanvases = [];
     for (let i = 1; i <= total; i++) {
-      setProgress((i - 1) / total * 80, `페이지 ${i} / ${total} 렌더링 중…`);
+      onProgress((i - 1) / total * 80, `페이지 ${i}/${total} 렌더링…`);
       const page     = await pdf.getPage(i);
       const viewport = page.getViewport({ scale });
       const canvas   = document.createElement('canvas');
@@ -553,7 +514,7 @@
       pageCanvases.push(canvas);
     }
 
-    setProgress(85, '페이지 병합 중…');
+    onProgress(85, '병합 중…');
 
     const totalWidth  = Math.max(...pageCanvases.map(c => c.width));
     const totalHeight = pageCanvases.reduce((sum, c) => sum + c.height, 0);
@@ -564,40 +525,88 @@
 
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, totalWidth, totalHeight);
-
-    let yOffset = 0;
+    let y = 0;
     for (const c of pageCanvases) {
-      ctx.drawImage(c, Math.floor((totalWidth - c.width) / 2), yOffset);
-      yOffset += c.height;
+      ctx.drawImage(c, Math.floor((totalWidth - c.width) / 2), y);
+      y += c.height;
     }
 
-    setProgress(95, '이미지 생성 중…');
-
-    const filename = `${baseName}.${ext}`;
+    onProgress(95, '이미지 생성 중…');
     const blob = await new Promise(res => merged.toBlob(res, fmt, quality));
-    const url  = URL.createObjectURL(blob);
+    return { blob, width: merged.width, height: merged.height, pages: total };
+  }
 
-    const card = document.createElement('div');
-    card.className = 'result-card';
-    card.innerHTML = `
-      <img class="result-preview" src="${url}" alt="변환 결과">
-      <div class="card-footer">
-        <div class="result-info">
-          <span class="filename">${filename}</span>
-          <span class="meta">${total}페이지 병합 · ${merged.width}×${merged.height}px · ${(blob.size/1024).toFixed(0)} KB</span>
-        </div>
-        <a class="btn-dl" href="${url}" download="${filename}">⬇ 다운로드</a>
-      </div>`;
-    results.appendChild(card);
+  // 변환 실행
+  let resultBlobs = [];  // { blob, filename }
 
-    setProgress(100, '변환 완료');
+  btnConvert.addEventListener('click', async () => {
+    if (!selectedFiles.length) return;
+    btnConvert.disabled = true;
+    btnDlAll.style.display = 'none';
+    results.innerHTML = '';
+    resultBlobs = [];
+    progressW.style.display = 'block';
+
+    const fmt     = fmtEl.value;
+    const scale   = parseFloat(scaleEl.value);
+    const quality = parseInt(qualityEl.value) / 100;
+    const ext     = fmt === 'image/jpeg' ? 'jpg' : fmt === 'image/png' ? 'png' : 'webp';
+    const total   = selectedFiles.length;
+
+    for (let fi = 0; fi < total; fi++) {
+      const file = selectedFiles[fi];
+      const baseName = file.name.replace(/\.pdf$/i, '');
+
+      // 전체 진행률: 각 파일이 (1/total) 구간 차지
+      const globalBase = fi / total * 100;
+      const globalSlice = 1 / total * 100;
+
+      const { blob, width, height, pages } = await convertPdf(
+        file, scale, fmt, quality,
+        (localPct, msg) => {
+          const global = globalBase + localPct / 100 * globalSlice;
+          setProgress(global, `[${fi+1}/${total}] ${file.name} — ${msg}`);
+        }
+      );
+
+      const filename = `${baseName}.${ext}`;
+      resultBlobs.push({ blob, filename });
+      const url = URL.createObjectURL(blob);
+
+      const card = document.createElement('div');
+      card.className = 'result-card';
+      card.innerHTML = `
+        <img class="result-preview" src="${url}" alt="${filename}">
+        <div class="card-footer">
+          <div class="result-info">
+            <span class="filename">${filename}</span>
+            <span class="meta">${pages}페이지 병합 · ${width}×${height}px · ${(blob.size/1024).toFixed(0)} KB</span>
+          </div>
+          <a class="btn-dl" href="${url}" download="${filename}">⬇ 다운로드</a>
+        </div>`;
+      results.appendChild(card);
+    }
+
+    setProgress(100, `완료 — ${total}개 파일 변환됨`);
     btnConvert.disabled = false;
+    if (total > 1) btnDlAll.style.display = 'block';
+  });
+
+  // 전체 다운로드
+  btnDlAll.addEventListener('click', async () => {
+    for (const { blob, filename } of resultBlobs) {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+      await new Promise(r => setTimeout(r, 400));
+    }
   });
 
   function setProgress(pct, msg) {
-    progressBar.style.width = pct + '%';
+    progressBar.style.width = Math.min(pct, 100) + '%';
     progressTxt.textContent = msg;
-    progressPct.textContent = Math.round(pct) + '%';
+    progressPct.textContent = Math.round(Math.min(pct, 100)) + '%';
   }
 </script>
 </body>
